@@ -3,10 +3,12 @@ backend:
   repo: pw-tf/MOODFM
   branch: main
 
-# Optional: nicer site title in the CMS sidebar
-site_url: https://pw-tf.github.io/MOODFM/
-display_url: https://pw-tf.github.io/MOODFM/
-logo_url: https://your-site.com/index/studiopics/moodfm.jpg  # optional, your logo
+site_url: https://pw-tf.github.io/MOODFM
+display_url: https://pw-tf.github.io/MOODFM
+logo_url: https://pw-tf.github.io/MOODFM/index/studiopics/moodfm.jpg
+
+media_folder: assets/images
+public_folder: /assets/images
 
 collections:
   - name: shows
