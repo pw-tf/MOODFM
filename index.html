@@ -423,28 +423,24 @@
       transform: translateY(-1px);
     }
 
-    /* NEW: Loading spinner for show cards */
-    .show-card {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .show-card-loading-overlay {
+    /* NEW: Modal loading spinner */
+    .modal-loading-overlay {
       position: absolute;
       inset: 0;
-      background-color: rgba(248, 245, 236, 0.95);
+      background-color: white;
+      border-radius: 0.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 20;
+      z-index: 30;
       transition: opacity 0.4s ease-out;
     }
 
-    .show-card-loading-spinner {
-      width: 48px;
-      height: 48px;
-      border: 5px solid var(--color-background-accent);
-      border-top: 5px solid var(--color-border-light);
+    .modal-loading-spinner {
+      width: 56px;
+      height: 56px;
+      border: 6px solid var(--color-background-accent);
+      border-top: 6px solid var(--color-border-light);
       border-radius: 50%;
       animation: spin 1.2s linear infinite;
     }
@@ -582,7 +578,7 @@
       }
     });
 
-    // Profile picture slideshow modal
+    // Profile picture slideshow modal (unchanged)
     const profilePic = document.getElementById('profilePic');
     const modalOverlay = document.getElementById('showModalOverlay');
     const modalContent = document.getElementById('showModalContent');
@@ -658,9 +654,15 @@
       document.body.style.overflow = 'hidden';
     }
 
-    // Show modal with player
+    // Show modal with player — now with loading spinner
     function openShowModal(card, autoplay = false) {
       modalContent.innerHTML = '';
+
+      // Add loading overlay
+      const loadingOverlay = document.createElement('div');
+      loadingOverlay.className = 'modal-loading-overlay';
+      loadingOverlay.innerHTML = '<div class="modal-loading-spinner"></div>';
+      modalContent.appendChild(loadingOverlay);
 
       const originalIframe = card.querySelector('.audio-and-details-container iframe');
       const iframe = originalIframe.cloneNode(true);
@@ -671,6 +673,16 @@
           iframe.src = src + (src.includes('?') ? '&' : '?') + 'autoplay=1';
         }
       }
+
+      // Hide iframe until loaded
+      iframe.style.opacity = '0';
+      iframe.style.transition = 'opacity 0.4s ease-in';
+
+      iframe.addEventListener('load', () => {
+        loadingOverlay.style.opacity = '0';
+        iframe.style.opacity = '1';
+        setTimeout(() => loadingOverlay.remove(), 400);
+      });
 
       modalContent.appendChild(iframe);
 
@@ -725,7 +737,7 @@
       document.body.style.overflow = '';
     }
 
-    // Attach listeners to show cards + iframe load handling
+    // Attach listeners to show cards (no spinner on cards anymore)
     function attachCardListeners(container) {
       const cards = container.querySelectorAll('.show-card');
       cards.forEach(card => {
@@ -737,16 +749,6 @@
           });
         }
         card.addEventListener('click', () => openShowModal(card, false));
-
-        // Loading spinner handling
-        const iframe = card.querySelector('iframe');
-        const overlay = card.querySelector('.show-card-loading-overlay');
-        if (iframe && overlay) {
-          iframe.addEventListener('load', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 400);
-          });
-        }
       });
     }
 
@@ -766,7 +768,7 @@
       });
     }
 
-    // Load shows from JSON
+    // Load shows from JSON (clean cards, no overlay)
     fetch('shows.json')
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -786,11 +788,6 @@
           card.className = 'show-card w-64 sm:w-72 bg-white rounded-xl shadow-md p-5 flex flex-col items-center border border-border-light';
 
           card.innerHTML = `
-            <!-- Loading overlay with spinner -->
-            <div class="show-card-loading-overlay">
-              <div class="show-card-loading-spinner"></div>
-            </div>
-
             <img src="${show.thumbnail}" alt="${show.title} Cover" class="show-image w-full h-auto rounded-lg object-cover shadow-sm aspect-square">
             <h3 class="font-eb-garamond text-2xl font-semibold text-text-dark mt-4 mb-1 text-center">${show.title}</h3>
             <p class="text-text-medium text-center text-xs mb-3">${show.date}</p>
