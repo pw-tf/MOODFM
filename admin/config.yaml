@@ -1,0 +1,30 @@
+backend:
+  name: github
+  repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME  # e.g., perrywtf/moodfm-site
+  branch: main  # or whatever your default branch is
+
+# Optional: nicer site title in the CMS sidebar
+site_url: https://your-site.com
+display_url: https://your-site.com
+logo_url: https://your-site.com/index/studiopics/moodfm.jpg  # optional, your logo
+
+collections:
+  - name: shows
+    label: Previous Shows
+    delete: false  # optional: prevent accidental deletion of the whole file
+    files:
+      - label: Shows List
+        name: shows
+        file: shows.json  # path relative to repo root
+        fields:
+          - label: Shows
+            name: shows
+            widget: list
+            allow_add: true
+            collapsed: false
+            root: true  # crucial: treats the top-level JSON as the list itself
+            fields:
+              - { label: Title, name: title, widget: string, required: true }
+              - { label: Date (e.g., 19/12/2025), name: date, widget: string, required: true }
+              - { label: Thumbnail URL, name: thumbnail, widget: string, required: true }
+              - { label: Mixcloud iFrame Src, name: iframeSrc, widget: text, required: true }
