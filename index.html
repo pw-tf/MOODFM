@@ -452,19 +452,53 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Filter bar styles */
-    .filter-bar {
+    /* Filter toggle & panel */
+    .filter-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--color-background-accent);
+      color: var(--color-text-dark);
+      font-weight: 500;
+      border-radius: 9999px;
+      box-shadow: 0 2px 5px var(--color-shadow-light);
+      transition: all 0.2s ease-in-out;
+      border: none;
+      cursor: pointer;
+      margin: 0 auto 1.5rem;
+    }
+
+    .filter-toggle-btn:hover {
+      background-color: var(--color-border-light);
+      transform: translateY(-1px);
+    }
+
+    .filter-panel {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+    }
+
+    .filter-panel.open {
+      max-height: 500px;
+      opacity: 1;
+    }
+
+    .filter-controls {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
       justify-content: center;
       align-items: center;
-      margin-bottom: 2rem;
-      padding: 1rem;
+      padding: 1rem 0;
     }
 
-    .filter-bar input[type="text"],
-    .filter-bar input[type="text"].flatpickr-input {
+    .filter-controls input[type="text"],
+    .filter-controls input[type="text"].flatpickr-input,
+    .filter-controls select {
       padding: 0.75rem 1rem;
       border-radius: 9999px;
       border: 1px solid var(--color-border-light);
@@ -472,11 +506,15 @@
       min-width: 200px;
     }
 
-    .filter-bar select {
-      padding: 0.75rem 1rem;
-      border-radius: 9999px;
-      border: 1px solid var(--color-border-light);
-      background-color: var(--color-background-main);
+    @media (max-width: 640px) {
+      .filter-controls {
+        flex-direction: column;
+      }
+      .filter-controls input,
+      .filter-controls select {
+        width: 100%;
+        min-width: unset;
+      }
     }
   </style>
 </head>
@@ -540,14 +578,26 @@
         Previous Broadcasts
       </h2>
 
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <input type="text" id="titleSearch" placeholder="Search by episode name...">
-        <input type="text" id="datePicker" placeholder="Select date...">
-        <select id="sortOrder">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-        </select>
+      <!-- Filter Toggle Button -->
+      <div class="text-center">
+        <button id="filterToggleBtn" class="filter-toggle-btn" aria-expanded="false" aria-controls="filterPanel">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Filters & Search
+        </button>
+      </div>
+
+      <!-- Collapsible Filter Panel -->
+      <div id="filterPanel" class="filter-panel">
+        <div class="filter-controls">
+          <input type="text" id="titleSearch" placeholder="Search by episode name...">
+          <input type="text" id="datePicker" placeholder="Select date (dd/mm/yyyy)...">
+          <select id="sortOrder">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
       </div>
 
       <div class="horizontal-scroll-container" id="showsContainer">
@@ -714,7 +764,6 @@
         }
       }
 
-      // Hide iframe until loaded
       iframe.style.opacity = '0';
       iframe.style.transition = 'opacity 0.4s ease-in';
 
@@ -808,6 +857,23 @@
       });
     }
 
+    // Filter toggle
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterPanel = document.getElementById('filterPanel');
+    if (filterToggleBtn && filterPanel) {
+      filterToggleBtn.addEventListener('click', () => {
+        filterPanel.classList.toggle('open');
+        const expanded = filterPanel.classList.contains('open');
+        filterToggleBtn.setAttribute('aria-expanded', expanded);
+        const icon = filterToggleBtn.querySelector('svg path');
+        if (expanded) {
+          icon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+        } else {
+          icon.setAttribute('d', 'M12 4v16m8-8H4');
+        }
+      });
+    }
+
     // Load shows from JSON
     let allShows = [];
 
@@ -852,10 +918,10 @@
       .then(shows => {
         allShows = shows;
 
-        // Parse dates and sort newest first by default
+        // Parse dates (assuming format dd/mm/yyyy and year 2025)
         allShows.forEach(show => {
           const [day, month] = show.date.split('/');
-          show.parsedDate = new Date(2025, month - 1, day); // year fixed to 2025
+          show.parsedDate = new Date(2025, month - 1, day);
         });
 
         renderShows([...allShows].sort((a, b) => b.parsedDate - a.parsedDate));
@@ -885,13 +951,11 @@
     function applyFilters() {
       let filtered = [...allShows];
 
-      // Title search
       const titleQuery = titleSearch.value.trim().toLowerCase();
       if (titleQuery) {
         filtered = filtered.filter(show => show.title.toLowerCase().includes(titleQuery));
       }
 
-      // Date filter
       const selectedDateStr = datePickerInput.value.trim();
       if (selectedDateStr) {
         const [day, month] = selectedDateStr.split('/');
@@ -899,7 +963,6 @@
         filtered = filtered.filter(show => show.parsedDate.getTime() === selectedDate.getTime());
       }
 
-      // Sort
       const order = sortOrder.value;
       if (order === 'newest') {
         filtered.sort((a, b) => b.parsedDate - a.parsedDate);
