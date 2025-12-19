@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOOD.FM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-background-main: #F8F5EC;
+      --color-background-accent: #E0DCCD;
+      --color-background-left-column: #B8B0A0;
+      --color-text-dark: #2C2C2C;
+      --color-text-medium: #555555;
+      --color-text-light: #F8F5EC;
+      --color-border-light: #D3CBBF;
+      --color-shadow-light: rgba(0,0,0,0.08);
+      --color-shadow-medium: rgba(0,0,0,0.15);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: var(--color-background-main);
+      color: var(--color-text-dark);
+      line-height: 1.6;
+      padding-top: 2.5rem;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'EB Garamond', serif;
+      letter-spacing: -0.01em;
+    }
+
+    .sticky-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #cc6d66;
+      color: var(--color-text-light);
+      text-align: center;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      z-index: 1000;
+      box-shadow: 0 2px 8px var(--color-shadow-light);
+      transition: opacity 0.3s ease-out;
+      opacity: 1;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sticky-banner a {
+      color: var(--color-text-light);
+      text-decoration: none;
+      display: block;
+      width: 100%;
+    }
+
+    .sticky-banner a:hover {
+      color: #E0E0E0;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--color-background-accent);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border-light);
+      border-radius: 10px;
+      border: 1px solid var(--color-background-accent);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9A9282;
+    }
+
+    .show-card:hover .show-image {
+      transform: scale(1.03);
+      box-shadow: 0 8px 25px var(--color-shadow-medium);
+    }
+
+    .section-fade-in {
+      opacity: 0;
+      transform: translateY(15px);
+      animation: sectionFadeIn 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    @keyframes sectionFadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .section-fade-in:nth-child(1) { animation-delay: 0.15s; }
+    .section-fade-in:nth-child(2) { animation-delay: 0.3s; }
+    .section-fade-in:nth-child(3) { animation-delay: 0.45s; }
+
+    .main-section {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 4rem 0;
+      position: relative;
+    }
+
+    .bio-content-transition {
+      max-height: 9999px;
+      opacity: 1;
+      transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease-in-out;
+      overflow: hidden;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 1023px) {
+      .bio-content-transition.collapsed {
+        max-height: 0;
+        opacity: 0;
+      }
+    }
+
+    .horizontal-scroll-container {
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: 1rem;
+      scroll-padding-right: 1rem;
+      overflow-x: auto;
+      overflow-y: visible;
+      display: flex;
+      gap: 1.5rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .horizontal-scroll-container > * {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      flex-shrink: 0;
+      width: 64;
+      max-width: 256px;
+      padding: 1.25rem;
+      transition: transform 0.4s ease-in-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    .bio-layout-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      background-color: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 4px 15px var(--color-shadow-light);
+    }
+    @media (min-width: 1024px) {
+      .bio-layout-container {
+        flex-direction: row;
+      }
+    }
+
+    .bio-left-column {
+      background-color: var(--color-background-left-column);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: var(--color-text-light);
+    }
+    @media (min-width: 1024px) {
+      .bio-left-column {
+        flex-basis: 300px;
+        flex-shrink: 0;
+        align-items: flex-start;
+        text-align: left;
+      }
+    }
+
+    .bio-left-column img {
+      width: 150px;
+      height: 150px;
+      border-radius: 0.5rem;
+      object-fit: cover;
+      margin-bottom: 1.5rem;
+      border: 2px solid var(--color-border-light);
+      cursor: pointer;
+    }
+
+    .bio-name {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--color-text-light);
+    }
+
+    .bio-title {
+      font-size: 1rem;
+      color: var(--color-text-light);
+      margin-bottom: 2rem;
+    }
+
+    .bio-right-column {
+      background-color: white;
+      padding: 2.5rem;
+      flex-grow: 1;
+      text-align: left;
+    }
+
+    .bio-right-column h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--color-text-dark);
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+    .bio-right-column h2::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 50px;
+      height: 2px;
+      background-color: var(--color-border-light);
+    }
+
+    .bio-text-paragraph {
+      margin-bottom: 1.25rem;
+      color: var(--color-text-dark);
+      font-size: 1rem;
+    }
+    .bio-text-paragraph:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .socials-toggle-button {
+      margin-top: .5rem;
+      padding: 0.5rem 1.5rem;
+      background-color: var(--color-background-accent);
+      color: var(--color-text-dark);
+      font-weight: 500;
+      border-radius: 9999px;
+      box-shadow: 0 2px 5px var(--color-shadow-light);
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+      border: none;
+      cursor: pointer;
+    }
+    .socials-toggle-button:hover {
+      background-color: var(--color-border-light);
+      transform: translateY(-1px);
+    }
+
+    .social-links-collapsible {
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease-in-out;
+      overflow: hidden;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .social-links-collapsible.expanded {
+      max-height: 500px;
+      opacity: 1;
+    }
+
+    .social-links-horizontal {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 0.5rem 0;
+    }
+    @media (min-width: 1024px) {
+      .social-links-horizontal {
+        justify-content: flex-start;
+      }
+    }
+    .social-links-horizontal a {
+      color: var(--color-text-light);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+      white-space: nowrap;
+    }
+    .social-links-horizontal a:hover {
+      color: #E0E0E0;
+      transform: translateY(-2px);
+    }
+
+    .custom-play-button-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--color-background-accent);
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+    .custom-play-button-wrapper:hover {
+      background-color: var(--color-border-light);
+      transform: scale(1.05);
+    }
+    .custom-play-button-wrapper svg {
+      width: 2rem;
+      height: 2rem;
+      color: var(--color-text-dark);
+    }
+
+    .audio-and-details-container {
+      display: none;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 15px 40px var(--color-shadow-medium);
+      padding: 1.5rem 1.5rem 3rem;
+      position: relative;
+      width: 95%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .modal-content iframe {
+      width: 100%;
+      height: 120px;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 640px) {
+      .modal-content iframe {
+        height: 400px;
+      }
+    }
+
+    .modal-content .show-title {
+      font-size: 2.5rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .modal-content .show-date {
+      font-size: 1rem;
+      color: var(--color-text-medium);
+      margin-bottom: 1rem;
+    }
+
+    .modal-close-button {
+      margin-top: 2rem;
+      padding: 0.75rem 2rem;
+      background-color: var(--color-background-accent);
+      color: var(--color-text-dark);
+      font-weight: 500;
+      font-size: 1rem;
+      border-radius: 9999px;
+      box-shadow: 0 2px 5px var(--color-shadow-light);
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal-close-button:hover {
+      background-color: var(--color-border-light);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header Banner -->
+  <div id="stickyHeaderBanner" class="sticky-banner">
+    <a href="https://perry.wtf/live" rel="noopener noreferrer">
+      Click to Listen LIVE!
+    </a>
+  </div>
+
+  <!-- About Section -->
+  <section id="about" class="main-section py-12 px-4 sm:px-6 lg:px-8 bg-background-main section-fade-in">
+    <div class="max-w-5xl mx-auto bio-layout-container">
+      <div class="bio-left-column">
+        <img id="profilePic" src="index/studiopics/moodfm.jpg" alt="MOOD FM Hosts">
+        <h3 class="font-eb-garamond bio-name">MOOD FM</h3>
+        <p class="bio-title">Curated Radio Hosted by Jack & Brett</p>
+
+        <button id="toggleSocialsBtn" class="socials-toggle-button" aria-expanded="false" aria-controls="socialLinksContainer">
+          View Socials
+        </button>
+
+        <div id="socialLinksContainer" class="social-links-collapsible">
+          <div class="social-links-horizontal">
+            <a href="https://open.spotify.com/artist/5pN7UVFyQoez426669S1Fq?si=mOpEZJd1RoaK5vJzz761-g" target="_blank" rel="noopener noreferrer">Spotify</a>
+            <a href="https://www.youtube.com/watch?v=1tA25OPvoXI&ab_channel=pwtf" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <a href="https://www.instagram.com/perry.wtf/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="mailto:brett@perry.wtf">Email</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="bio-right-column">
+        <h2 class="font-eb-garamond text-4xl font-bold">About MOOD FM</h2>
+        <p class="bio-text-paragraph">
+          MOOD FM was started in 2025 blah blah blagh
+        </p>
+        <div id="fullBioContent" class="bio-content-transition">
+          <p class="bio-text-paragraph">
+           Yeah this will get filled in eventually.
+          </p>
+        </div>
+        <button id="toggleBioBtn" class="mt-5 px-6 py-2 bg-background-accent text-text-dark font-medium rounded-full shadow-sm hover:bg-border-light transition-colors duration-300 block lg:hidden"
+                aria-expanded="false" aria-controls="fullBioContent">
+          See more
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Previous Shows Section -->
+  <section id="shows" class="main-section py-16 px-4 sm:px-6 lg:px-8 bg-background-accent shadow-inner section-fade-in">
+    <div class="max-w-6xl mx-auto w-full">
+      <h2 class="font-eb-garamond text-3xl sm:text-4xl font-bold text-text-dark mb-10 text-center">
+        Previous Shows
+      </h2>
+
+      <div class="horizontal-scroll-container" id="showsContainer">
+        <!-- Cards generated from shows.json -->
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 px-4 sm:px-6 lg:px-8 text-center text-text-medium text-xs bg-background-accent border-t border-border-light">
+    <p>&copy; 2025 MOOD FM. All rights reserved.</p>
+  </footer>
+
+  <!-- Modal Overlay -->
+  <div id="showModalOverlay" class="modal-overlay">
+    <div id="showModalContent" class="modal-content">
+      <!-- Content injected dynamically -->
+    </div>
+  </div>
+
+  <script>
+    // Fade in sections on scroll
+    const sections = document.querySelectorAll('.section-fade-in');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    sections.forEach(sec => observer.observe(sec));
+
+    // Mobile bio "See more" toggle
+    const toggleBioBtn = document.getElementById('toggleBioBtn');
+    const fullBioContent = document.getElementById('fullBioContent');
+    if (toggleBioBtn && fullBioContent) {
+      if (window.innerWidth < 1024) {
+        fullBioContent.classList.add('collapsed');
+      }
+      toggleBioBtn.addEventListener('click', () => {
+        fullBioContent.classList.toggle('collapsed');
+        const expanded = !fullBioContent.classList.contains('collapsed');
+        toggleBioBtn.textContent = expanded ? 'Show less' : 'See more';
+        toggleBioBtn.setAttribute('aria-expanded', expanded);
+      });
+    }
+
+    // Social links toggle
+    const toggleSocialsBtn = document.getElementById('toggleSocialsBtn');
+    const socialLinksContainer = document.getElementById('socialLinksContainer');
+    if (toggleSocialsBtn && socialLinksContainer) {
+      toggleSocialsBtn.addEventListener('click', () => {
+        socialLinksContainer.classList.toggle('expanded');
+        const expanded = socialLinksContainer.classList.contains('expanded');
+        toggleSocialsBtn.setAttribute('aria-expanded', expanded);
+      });
+    }
+
+    // Fade sticky banner on scroll
+    const stickyBanner = document.getElementById('stickyHeaderBanner');
+    window.addEventListener('scroll', () => {
+      if (stickyBanner) {
+        stickyBanner.style.opacity = window.scrollY > 10 ? '0.5' : '1';
+      }
+    });
+
+    // Profile picture slideshow modal
+    const profilePic = document.getElementById('profilePic');
+    const modalOverlay = document.getElementById('showModalOverlay');
+    const modalContent = document.getElementById('showModalContent');
+    const biopicImages = [
+      "index/studiopics/biopic1.jpg",
+      "index/studiopics/biopic2.jpg",
+      "index/studiopics/biopic3.jpg",
+      "index/studiopics/biopic4.png",
+      "index/studiopics/biopic5.png",
+      "index/studiopics/biopic6.jpg",
+      "index/studiopics/biopic7.jpg"
+    ];
+
+    if (profilePic) {
+      profilePic.addEventListener('click', () => openProfileModal(profilePic.src));
+    }
+
+    function openProfileModal(initialSrc) {
+      modalContent.innerHTML = '';
+
+      let currentIndex = biopicImages.findIndex(img => initialSrc.includes(img.split('/').pop()));
+      if (currentIndex === -1) currentIndex = 0;
+
+      const spinner = document.createElement('div');
+      spinner.className = 'spinner border-4 border-gray-200 border-l-gray-600 rounded-full w-10 h-10 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2';
+      modalContent.appendChild(spinner);
+
+      const img = document.createElement('img');
+      img.className = 'max-w-full max-h-[70vh] rounded-lg shadow-md opacity-0 transition-opacity';
+      img.onload = () => {
+        spinner.remove();
+        img.classList.remove('opacity-0');
+        img.classList.add('opacity-100');
+      };
+      img.src = biopicImages[currentIndex];
+      modalContent.appendChild(img);
+
+      const nav = document.createElement('div');
+      nav.className = 'flex justify-between w-full mt-4';
+      const prev = document.createElement('button');
+      prev.textContent = 'Prev';
+      prev.className = 'px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300';
+      prev.onclick = () => {
+        currentIndex = (currentIndex - 1 + biopicImages.length) % biopicImages.length;
+        spinner.style.display = 'block';
+        img.classList.add('opacity-0');
+        img.src = biopicImages[currentIndex];
+      };
+      const counter = document.createElement('span');
+      counter.textContent = `${currentIndex + 1} / ${biopicImages.length}`;
+      counter.className = 'text-gray-700';
+      const next = document.createElement('button');
+      next.textContent = 'Next';
+      next.className = 'px-4 py-2 bg-gray-200 rounded-full hover:bg-gray-300';
+      next.onclick = () => {
+        currentIndex = (currentIndex + 1) % biopicImages.length;
+        spinner.style.display = 'block';
+        img.classList.add('opacity-0');
+        img.src = biopicImages[currentIndex];
+        counter.textContent = `${currentIndex + 1} / ${biopicImages.length}`;
+      };
+
+      nav.append(prev, counter, next);
+      modalContent.appendChild(nav);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.className = 'modal-close-button';
+      closeBtn.onclick = closeModal;
+      modalContent.appendChild(closeBtn);
+
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Show modal with player
+    function openShowModal(card, autoplay = false) {
+      modalContent.innerHTML = '';
+
+      const originalIframe = card.querySelector('.audio-and-details-container iframe');
+      const iframe = originalIframe.cloneNode(true);
+
+      if (autoplay) {
+        let src = iframe.src;
+        if (!src.includes('autoplay=')) {
+          iframe.src = src + (src.includes('?') ? '&' : '?') + 'autoplay=1';
+        }
+      }
+
+      modalContent.appendChild(iframe);
+
+      const title = document.createElement('h3');
+      title.className = 'show-title font-eb-garamond font-semibold text-text-dark';
+      title.textContent = card.querySelector('h3').textContent;
+      modalContent.appendChild(title);
+
+      const date = document.createElement('p');
+      date.className = 'show-date';
+      date.textContent = card.querySelector('p.text-text-medium').textContent;
+      modalContent.appendChild(date);
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'flex gap-4 justify-center';
+
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.className = 'modal-close-button';
+      closeBtn.onclick = closeModal;
+      buttonContainer.appendChild(closeBtn);
+
+const popOutBtn = document.createElement('button');
+popOutBtn.textContent = 'Pop Out';
+popOutBtn.className = 'modal-close-button';
+popOutBtn.onclick = () => {
+  // Extract the feed parameter correctly
+  const urlParams = new URLSearchParams(iframe.src.split('?')[1] || '');
+  const feed = urlParams.get('feed');
+  
+  if (feed) {
+    const popUrl = `https://www.mixcloud.com/widget/iframe/?feed=${feed}&hide_cover=1&mini=1&autoplay=1`;
+    window.open(popUrl, 'moodfm_player', 'width=400,height=300,resizable=yes,scrollbars=no');
+  } else {
+    alert('Unable to pop out this player');
+  }
+  
+  closeModal(); // optional – remove if you want modal to stay open
+};
+      buttonContainer.appendChild(popOutBtn);
+
+      modalContent.appendChild(buttonContainer);
+
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const iframe = modalContent.querySelector('iframe');
+      if (iframe) {
+        iframe.src = iframe.src; // reload to stop playback
+      }
+
+      modalContent.innerHTML = '';
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Attach listeners to show cards after dynamic load
+    function attachCardListeners(container) {
+      const cards = container.querySelectorAll('.show-card');
+      cards.forEach(card => {
+        const playButton = card.querySelector('.custom-play-button-wrapper');
+        if (playButton) {
+          playButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openShowModal(card, true);
+          });
+        }
+        card.addEventListener('click', () => openShowModal(card, false));
+      });
+    }
+
+    // ESC key closes modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // Load shows from JSON
+    fetch('shows.json')
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(shows => {
+        const container = document.getElementById('showsContainer');
+        if (!container) return;
+
+        if (shows.length === 0) {
+          container.innerHTML = '<p class="text-center py-10 text-text-medium">No shows yet.</p>';
+          return;
+        }
+
+        shows.forEach(show => {
+          const card = document.createElement('div');
+          card.className = 'show-card w-64 sm:w-72 bg-white rounded-xl shadow-md p-5 flex flex-col items-center border border-border-light';
+
+          card.innerHTML = `
+            <img src="${show.thumbnail}" alt="${show.title} Cover" class="show-image w-full h-auto rounded-lg object-cover shadow-sm aspect-square">
+            <h3 class="font-eb-garamond text-2xl font-semibold text-text-dark mt-4 mb-1 text-center">${show.title}</h3>
+            <p class="text-text-medium text-center text-xs mb-3">${show.date}</p>
+            <div class="custom-play-button-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-text-dark">
+                <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.566 0 3.278l-11.54 6.347c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="audio-and-details-container">
+              <iframe width="100%" height="120" src="${show.iframeSrc}" frameborder="0" allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"></iframe>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+
+        attachCardListeners(container);
+      })
+      .catch(error => {
+        console.error('Failed to load shows.json:', error);
+        const container = document.getElementById('showsContainer');
+        if (container) {
+          container.innerHTML = '<p class="text-center py-10 text-red-600">Error loading shows</p>';
+        }
+      });
+  </script>
+</body>
+</html>
